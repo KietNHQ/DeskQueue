@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <title>DeskQueue — dang nhap</title>
+</head>
+
+<body>
+    <h1>DeskQueue</h1>
+    {% if error %}<p>{{ error }}</p>{% endif %}
+    <form method="post" action="/login">
+        <p><label>Email <input name="email" type="email" required></label></p>
+        <p><label>Mat khau <input name="password" type="password" required></label></p>
+        <button type="submit">Dang nhap</button>
+    </form>
+    <p>An (nguoi gui): an@example.com / an123456</p>
+    <p>Binh (nguoi xu ly): binh@example.com / binh123456</p>
+</body>
+
+</html>

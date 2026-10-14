@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <title>DeskQueue — phieu</title>
+</head>
+
+<body>
+    <p>{{ user["name"] }} ({{ user["role"] }})</p>
+    <form method="post" action="/logout"><button type="submit">Thoat</button></form>
+
+    <h1>Phieu yeu cau</h1>
+    <form method="post" action="/tickets">
+        <p><input name="title" placeholder="Tieu de" required></p>
+        <p><textarea name="body" placeholder="Noi dung" required></textarea></p>
+        <p>
+            <select name="priority">
+                <option value="low">low</option>
+                <option value="normal" selected>normal</option>
+                <option value="high">high</option>
+            </select>
+        </p>
+        <button type="submit">Gui phieu</button>
+    </form>
+
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Id</th>
+            <th>Tieu de</th>
+            <th>Nguoi gui</th>
+            <th>Muc</th>
+            <th>Trang thai</th>
+            <th></th>
+        </tr>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket["id"] }}</td>
+            <td>{{ ticket["title"] }}</td>
+            <td>{{ ticket["requester"] }}</td>
+            <td>{{ ticket["priority"] }}</td>
+            <td>{{ ticket["status"] }}</td>
+            <td>
+                {% if user["role"] == "agent" %}
+                <form method="post" action="/tickets/{{ ticket['id'] }}/status">
+                    <select name="status">
+                        <option value="open">open</option>
+                        <option value="doing">doing</option>
+                        <option value="done">done</option>
+                    </select>
+                    <button type="submit">Cap nhat</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

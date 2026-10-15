@@ -1,4 +1,3 @@
-```markdown
 # DeskQueue
 
 Internal help-desk tracker. Staff open a ticket (machine broken, access request, forgotten password). An agent changes the status and must write a note. The list page shows how many tickets are open, in progress, or done.

@@ -11,6 +11,11 @@
     <form method="post" action="/logout"><button type="submit">Thoat</button></form>
 
     <h1>Phieu yeu cau</h1>
+    <p>
+        Mo: {{ counts["open_count"] or 0 }} |
+        Dang lam: {{ counts["doing_count"] or 0 }} |
+        Xong: {{ counts["done_count"] or 0 }}
+    </p>
     <form method="post" action="/tickets">
         <p><input name="title" placeholder="Tieu de" required></p>
         <p><textarea name="body" placeholder="Noi dung" required></textarea></p>
@@ -48,6 +53,7 @@
                         <option value="doing">doing</option>
                         <option value="done">done</option>
                     </select>
+                    <input name="note" placeholder="Ly do" required>
                     <button type="submit">Cap nhat</button>
                 </form>
                 {% endif %}

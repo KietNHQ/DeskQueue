@@ -91,7 +91,16 @@ def tickets(request: Request):
                 """,
                 (user["id"],),
             ).fetchall()
-    return templates.TemplateResponse(request, "tickets.html", {"user": user, "tickets": rows})
+        counts = conn.execute(
+            """
+            SELECT
+            SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_count,
+            SUM(CASE WHEN status = 'doing' THEN 1 ELSE 0 END) AS doing_count,
+            SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) AS done_count
+            FROM tickets
+            """
+        ).fetchone()
+    return templates.TemplateResponse(request, "tickets.html", {"user": user, "tickets": rows, "counts": counts})
 
 
 @app.post("/tickets")
@@ -111,14 +120,29 @@ def create_ticket(request: Request, title: str = Form(...), body: str = Form(...
 
 
 @app.post("/tickets/{ticket_id}/status")
-def change_status(request: Request, ticket_id: int, status: str = Form(...)):
+def change_status(
+    request: Request,
+    ticket_id: int,
+    status: str = Form(...),
+    note: str = Form(""),
+):
     if status not in {"open", "doing", "done"}:
+        return RedirectResponse("/tickets", status_code=303)
+    note = note.strip()
+    if not note:
         return RedirectResponse("/tickets", status_code=303)
     with connect() as conn:
         user = current_user(request, conn)
         if not user or user["role"] != "agent":
             return RedirectResponse("/tickets", status_code=303)
-        conn.execute("UPDATE tickets SET status = ? WHERE id = ?", (status, ticket_id))
+        conn.execute(
+            "UPDATE tickets SET status = ? WHERE id = ?",
+            (status, ticket_id),
+        )
+        conn.execute(
+            "INSERT INTO notes (ticket_id, author_id, body) VALUES (?, ?, ?)",
+            (ticket_id, user["id"], note),
+        )
         conn.commit()
     return RedirectResponse("/tickets", status_code=303)
 

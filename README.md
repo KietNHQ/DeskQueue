@@ -74,6 +74,13 @@ DeskQueue/
     tickets.html
   deskqueue.db   # not in git
 ```
+## Filter
+
+`/tickets?status=open` shows only open tickets. Same for `doing` and `done`. `/tickets` shows all. A requester still only sees their own tickets.
+
+## Due date
+
+New tickets can set `due_at`. A ticket is overdue when `due_at` is before today and status is not `done`. The list marks it `(qua han)`.
 
 ## What I practiced
 

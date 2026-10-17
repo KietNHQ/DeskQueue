@@ -1,9 +1,10 @@
 import hashlib
 import secrets
 import sqlite3
+from datetime import date
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Query, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -68,29 +69,30 @@ def logout(request: Request):
 
 
 @app.get("/tickets")
-def tickets(request: Request):
+def tickets(request: Request, status: str = Query("")):
+    if status not in {"", "open", "doing", "done"}:
+        status = ""
     with connect() as conn:
         user = current_user(request, conn)
         if not user:
             return RedirectResponse("/login", status_code=303)
-        if user["role"] == "agent":
-            rows = conn.execute(
-                """
-                SELECT tickets.id, tickets.title, tickets.status, tickets.priority, users.name AS requester
-                FROM tickets JOIN users ON users.id = tickets.requester_id
-                ORDER BY tickets.id DESC
-                """
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                """
-                SELECT tickets.id, tickets.title, tickets.status, tickets.priority, users.name AS requester
-                FROM tickets JOIN users ON users.id = tickets.requester_id
-                WHERE tickets.requester_id = ?
-                ORDER BY tickets.id DESC
-                """,
-                (user["id"],),
-            ).fetchall()
+        sql = """
+            SELECT tickets.id, tickets.title, tickets.status, tickets.priority,
+                   tickets.due_at, users.name AS requester
+            FROM tickets JOIN users ON users.id = tickets.requester_id
+        """
+        params = []
+        where = []
+        if user["role"] != "agent":
+            where.append("tickets.requester_id = ?")
+            params.append(user["id"])
+        if status:
+            where.append("tickets.status = ?")
+            params.append(status)
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY tickets.id DESC"
+        rows = conn.execute(sql, params).fetchall()
         counts = conn.execute(
             """
             SELECT
@@ -100,20 +102,31 @@ def tickets(request: Request):
             FROM tickets
             """
         ).fetchone()
-    return templates.TemplateResponse(request, "tickets.html", {"user": user, "tickets": rows, "counts": counts})
+    return templates.TemplateResponse(
+        request,
+        "tickets.html",
+        {"user": user, "tickets": rows, "counts": counts, "status": status, "today": date.today().isoformat()},
+    )
 
 
 @app.post("/tickets")
-def create_ticket(request: Request, title: str = Form(...), body: str = Form(...), priority: str = Form("normal")):
+def create_ticket(
+    request: Request,
+    title: str = Form(...),
+    body: str = Form(...),
+    priority: str = Form("normal"),
+    due_at: str = Form(""),
+):
     if priority not in {"low", "normal", "high"}:
         priority = "normal"
+    due_at = due_at.strip() or None
     with connect() as conn:
         user = current_user(request, conn)
         if not user:
             return RedirectResponse("/login", status_code=303)
         conn.execute(
-            "INSERT INTO tickets (title, body, priority, requester_id) VALUES (?, ?, ?, ?)",
-            (title.strip(), body.strip(), priority, user["id"]),
+            "INSERT INTO tickets (title, body, priority, requester_id, due_at) VALUES (?, ?, ?, ?, ?)",
+            (title.strip(), body.strip(), priority, user["id"], due_at),
         )
         conn.commit()
     return RedirectResponse("/tickets", status_code=303)

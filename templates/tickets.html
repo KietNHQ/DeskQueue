@@ -16,6 +16,12 @@
         Dang lam: {{ counts["doing_count"] or 0 }} |
         Xong: {{ counts["done_count"] or 0 }}
     </p>
+    <p>
+        <a href="/tickets">Tat ca</a> |
+        <a href="/tickets?status=open">Mo</a> |
+        <a href="/tickets?status=doing">Dang lam</a> |
+        <a href="/tickets?status=done">Xong</a>
+    </p>
     <form method="post" action="/tickets">
         <p><input name="title" placeholder="Tieu de" required></p>
         <p><textarea name="body" placeholder="Noi dung" required></textarea></p>
@@ -26,6 +32,7 @@
                 <option value="high">high</option>
             </select>
         </p>
+        <p><input name="due_at" type="date"></p>
         <button type="submit">Gui phieu</button>
     </form>
 
@@ -36,6 +43,7 @@
             <th>Nguoi gui</th>
             <th>Muc</th>
             <th>Trang thai</th>
+            <th>Han</th>
             <th></th>
         </tr>
         {% for ticket in tickets %}
@@ -45,6 +53,10 @@
             <td>{{ ticket["requester"] }}</td>
             <td>{{ ticket["priority"] }}</td>
             <td>{{ ticket["status"] }}</td>
+            <td>
+                {{ ticket["due_at"] or "" }}
+                {% if ticket["due_at"] and ticket["status"] != "done" and ticket["due_at"] < today %} (qua han) {% endif
+                    %} </td>
             <td>
                 {% if user["role"] == "agent" %}
                 <form method="post" action="/tickets/{{ ticket['id'] }}/status">

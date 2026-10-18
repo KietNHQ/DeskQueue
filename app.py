@@ -93,21 +93,48 @@ def tickets(request: Request, status: str = Query("")):
             sql += " WHERE " + " AND ".join(where)
         sql += " ORDER BY tickets.id DESC"
         rows = conn.execute(sql, params).fetchall()
+        today = date.today().isoformat()
         counts = conn.execute(
             """
             SELECT
             SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_count,
             SUM(CASE WHEN status = 'doing' THEN 1 ELSE 0 END) AS doing_count,
-            SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) AS done_count
+            SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) AS done_count,
+            SUM(CASE WHEN due_at IS NOT NULL AND due_at < ? AND status != 'done' THEN 1 ELSE 0 END) AS overdue_count
             FROM tickets
-            """
+            """,
+            (today,),
         ).fetchone()
     return templates.TemplateResponse(
         request,
         "tickets.html",
         {"user": user, "tickets": rows, "counts": counts, "status": status, "today": date.today().isoformat()},
     )
-
+@app.get("/tickets/{ticket_id}")
+def ticket_detail(request: Request, ticket_id: int):
+    with connect() as conn:
+        user = current_user(request, conn)
+        if not user:
+            return RedirectResponse("/login", status_code=303)
+        row = conn.execute(
+            """
+            SELECT tickets.id, tickets.title, tickets.body, tickets.status,
+                   tickets.priority, tickets.due_at, users.name AS requester,
+                   tickets.requester_id
+            FROM tickets JOIN users ON users.id = tickets.requester_id
+            WHERE tickets.id = ?
+            """,
+            (ticket_id,),
+        ).fetchone()
+        if not row:
+            return RedirectResponse("/tickets", status_code=303)
+        if user["role"] != "agent" and row["requester_id"] != user["id"]:
+            return RedirectResponse("/tickets", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "ticket.html",
+        {"user": user, "ticket": row, "today": date.today().isoformat()},
+    )
 
 @app.post("/tickets")
 def create_ticket(

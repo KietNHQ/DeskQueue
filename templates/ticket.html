@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <title>Phieu {{ ticket["id"] }}</title>
+</head>
+
+<body>
+    <p><a href="/tickets">Ve danh sach</a></p>
+    <h1>{{ ticket["title"] }}</h1>
+    <p>Nguoi gui: {{ ticket["requester"] }}</p>
+    <p>Trang thai: {{ ticket["status"] }}</p>
+    <p>Muc: {{ ticket["priority"] }}</p>
+    <p>
+        Han: {{ ticket["due_at"] or "" }}
+        {% if ticket["due_at"] and ticket["status"] != "done" and ticket["due_at"] < today %} (qua han) {% endif %} </p>
+            <p>{{ ticket["body"] }}</p>
+</body>
+
+</html>

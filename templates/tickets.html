@@ -14,7 +14,8 @@
     <p>
         Mo: {{ counts["open_count"] or 0 }} |
         Dang lam: {{ counts["doing_count"] or 0 }} |
-        Xong: {{ counts["done_count"] or 0 }}
+        Xong: {{ counts["done_count"] or 0 }} |
+        Qua han: {{ counts["overdue_count"] or 0 }}
     </p>
     <p>
         <a href="/tickets">Tat ca</a> |
@@ -49,7 +50,7 @@
         {% for ticket in tickets %}
         <tr>
             <td>{{ ticket["id"] }}</td>
-            <td>{{ ticket["title"] }}</td>
+            <td><a href="/tickets/{{ ticket['id'] }}">{{ ticket["title"] }}</a></td>
             <td>{{ ticket["requester"] }}</td>
             <td>{{ ticket["priority"] }}</td>
             <td>{{ ticket["status"] }}</td>

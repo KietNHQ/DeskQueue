@@ -16,6 +16,32 @@
         Han: {{ ticket["due_at"] or "" }}
         {% if ticket["due_at"] and ticket["status"] != "done" and ticket["due_at"] < today %} (qua han) {% endif %} </p>
             <p>{{ ticket["body"] }}</p>
+
+            <h2>Ghi chu</h2>
+            {% if notes %}
+            <ul>
+                {% for note in notes %}
+                <li>{{ note["created_at"] }} — {{ note["author"] }}: {{ note["body"] }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>Chua co ghi chu.</p>
+            {% endif %}
+
+            {% if user["role"] == "agent" %}
+            <h2>Doi trang thai</h2>
+            <form method="post" action="/tickets/{{ ticket['id'] }}/status">
+                <p>
+                    <select name="status">
+                        <option value="open">open</option>
+                        <option value="doing">doing</option>
+                        <option value="done">done</option>
+                    </select>
+                </p>
+                <p><input name="note" placeholder="Ly do" required></p>
+                <button type="submit">Cap nhat</button>
+            </form>
+            {% endif %}
 </body>
 
 </html>

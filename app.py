@@ -130,10 +130,19 @@ def ticket_detail(request: Request, ticket_id: int):
             return RedirectResponse("/tickets", status_code=303)
         if user["role"] != "agent" and row["requester_id"] != user["id"]:
             return RedirectResponse("/tickets", status_code=303)
+        notes = conn.execute(
+            """
+            SELECT notes.body, notes.created_at, users.name AS author
+            FROM notes JOIN users ON users.id = notes.author_id
+            WHERE notes.ticket_id = ?
+            ORDER BY notes.id DESC
+            """,
+            (ticket_id,),
+        ).fetchall()
     return templates.TemplateResponse(
         request,
         "ticket.html",
-        {"user": user, "ticket": row, "today": date.today().isoformat()},
+        {"user": user, "ticket": row, "notes": notes, "today": date.today().isoformat()},
     )
 
 @app.post("/tickets")
@@ -167,10 +176,10 @@ def change_status(
     note: str = Form(""),
 ):
     if status not in {"open", "doing", "done"}:
-        return RedirectResponse("/tickets", status_code=303)
+        return RedirectResponse(f"/tickets/{ticket_id}", status_code=303)
     note = note.strip()
     if not note:
-        return RedirectResponse("/tickets", status_code=303)
+        return RedirectResponse(f"/tickets/{ticket_id}", status_code=303)
     with connect() as conn:
         user = current_user(request, conn)
         if not user or user["role"] != "agent":
@@ -184,7 +193,7 @@ def change_status(
             (ticket_id, user["id"], note),
         )
         conn.commit()
-    return RedirectResponse("/tickets", status_code=303)
+    return RedirectResponse(f"/tickets/{ticket_id}", status_code=303)
 
 
 def set_password(conn, email: str, password: str):

@@ -48,7 +48,7 @@ Requester sees only their own tickets and can create new ones. Agent sees every 
 ## Data model
 
 - `users`: id, name, email (unique), role (`requester` or `agent`), password hash and salt
-- `tickets`: id, title, body, status (`open` / `doing` / `done`), priority (`low` / `normal` / `high`), `requester_id` (foreign key), created_at
+- `tickets`: id, title, body, status (`open` / `doing` / `done`), priority (`low` / `normal` / `high`), `requester_id` (foreign key), `due_at`, created_at
 - `notes`: id, `ticket_id`, `author_id`, body, created_at
 
 A ticket belongs to one requester. A note belongs to one ticket and one author. Status changes without a note are rejected on the server.

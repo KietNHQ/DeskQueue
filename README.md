@@ -68,15 +68,19 @@ DeskQueue/
   schema.sql
   seed.sql
   notes.sql
+  add_due.py
   requirements.txt
+  docs/
+    login.png
+    list.png
+    filter.png
+    detail.png
   templates/
     login.html
     tickets.html
+    ticket.html
   deskqueue.db   # not in git
 ```
-## Filter
-
-`/tickets?status=open` shows only open tickets. Same for `doing` and `done`. `/tickets` shows all. A requester still only sees their own tickets.
 
 ## Due date
 

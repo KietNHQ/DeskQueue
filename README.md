@@ -82,6 +82,28 @@ DeskQueue/
 
 New tickets can set `due_at`. A ticket is overdue when `due_at` is before today and status is not `done`. The list marks it `(qua han)`.
 
+## Filter
+
+`/tickets?status=open` shows only open tickets. Same for `doing` and `done`. `/tickets` shows all. A requester still only sees their own tickets. The list counts open, doing, done, and overdue.
+
+## Screenshots
+
+Login
+
+![Login](docs/login.png)
+
+Ticket list
+
+![List](docs/list.png)
+
+Filter
+
+![Filter](docs/filter.png)
+
+Ticket detail with notes
+
+![Detail](docs/detail.png)
+
 ## What I practiced
 
 - Schema with primary keys, foreign keys, and CHECK constraints
